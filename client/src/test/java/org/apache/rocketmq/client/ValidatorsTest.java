@@ -38,7 +38,7 @@ public class ValidatorsTest {
 
     @Test
     public void testCheckTopic_HasIllegalCharacters() {
-        String illegalTopic = "TOPIC&*^";
+        String illegalTopic = "[TOPIC-Test]";//"TOPIC&*^";
         try {
             Validators.checkTopic(illegalTopic);
             failBecauseExceptionWasNotThrown(MQClientException.class);
