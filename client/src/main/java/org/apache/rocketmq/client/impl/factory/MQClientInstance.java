@@ -592,6 +592,7 @@ public class MQClientInstance {
                 try {
                     TopicRouteData topicRouteData;
                     if (isDefault && defaultMQProducer != null) {
+                        // 1.1 使用默认Topic去查询
                         topicRouteData = this.mQClientAPIImpl.getDefaultTopicRouteInfoFromNameServer(defaultMQProducer.getCreateTopicKey(),
                             1000 * 3);
                         if (topicRouteData != null) {
@@ -602,10 +603,15 @@ public class MQClientInstance {
                             }
                         }
                     } else {
+                        // 1.2 使用指定topic查询路由信息
                         topicRouteData = this.mQClientAPIImpl.getTopicRouteInfoFromNameServer(topic, 1000 * 3);
                     }
+
                     if (topicRouteData != null) {
+                        // 2. 将从NameServer中找到的路由信息
+                        // 获取本地缓存的路由信息
                         TopicRouteData old = this.topicRouteTable.get(topic);
+                        // 与本地缓存中的路由信息对比，判断路由信息是否发生改变，
                         boolean changed = topicRouteDataIsChange(old, topicRouteData);
                         if (!changed) {
                             changed = this.isNeedUpdateTopicRouteInfo(topic);
@@ -613,9 +619,11 @@ public class MQClientInstance {
                             log.info("the topic[{}] route info changed, old[{}] ,new[{}]", topic, old, topicRouteData);
                         }
 
+                        // 如果发生了改变
                         if (changed) {
                             TopicRouteData cloneTopicRouteData = topicRouteData.cloneTopicRouteData();
 
+                            // 更新Broker地址缓存表
                             for (BrokerData bd : topicRouteData.getBrokerDatas()) {
                                 this.brokerAddrTable.put(bd.getBrokerName(), bd.getBrokerAddrs());
                             }
